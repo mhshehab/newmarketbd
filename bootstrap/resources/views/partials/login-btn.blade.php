@@ -1,0 +1,1 @@
+<button @click="loginModal = true" class="bg-pink-600 text-white px-5 py-2 rounded font-bold text-sm hover:bg-pink-700 transition shadow-md">Login</button>
