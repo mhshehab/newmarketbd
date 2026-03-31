@@ -22,7 +22,7 @@ class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-tag'; 
 
     public static function form(Form $form): Form
     {
@@ -34,33 +34,50 @@ class CategoryResource extends Resource
                         TextInput::make('name')
                             ->label('Category Name')
                             ->required()
+                            ->maxLength(255)
                             ->live(onBlur: true)
                             ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', Str::slug($state))),
 
                         TextInput::make('slug')
+                            ->label('URL Slug')
                             ->required()
                             ->disabled()
-                            ->dehydrated(),
+                            ->dehydrated()
+                            ->unique(Category::class, 'slug', ignoreRecord: true),
 
                         Select::make('parent_id')
                             ->label('Parent Category')
                             ->relationship('parent', 'name')
                             ->searchable()
                             ->preload()
-                            ->placeholder('মূল ক্যাটাগরি হলে খালি রাখুন')
-                            ->helperText('নেস্টেড করতে চাইলে মেইন ক্যাটাগরি সিলেক্ট করুন।'),
+                            ->placeholder('মূল ক্যাটাগরি হলে খালি রাখুন'),
+
+                        // এখানে আমরা ড্রপডাউনে আরও কিছু প্রয়োজনীয় আইকন যোগ করেছি
+                        Select::make('icon')
+                            ->label('Category Icon')
+                            ->options([
+                                'heroicon-o-shopping-bag' => 'Shopping Bag',
+                                'heroicon-o-cpu-chip' => 'Electronics',
+                                'heroicon-o-home' => 'Home & Garden',
+                                'heroicon-o-bolt' => 'Fashion',
+                                'heroicon-o-beaker' => 'Health & Beauty',
+                                'heroicon-o-gift' => 'Gifts',
+                                'heroicon-o-camera' => 'Gadgets',
+                                'heroicon-o-device-phone-mobile' => 'Mobile Phones',
+                                'heroicon-o-academic-cap' => 'Books & Education',
+                                'heroicon-o-sparkles' => 'Jewelry',
+                                'heroicon-o-truck' => 'Automotive',
+                            ])
+                            ->searchable()
+                            ->preload()
+                            ->visible(fn (Forms\Get $get) => $get('parent_id') === null), 
 
                         FileUpload::make('image')
                             ->label('Category Image')
                             ->image()
                             ->directory('categories')
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                            ->maxSize(2048)
-                            ->minSize(1)
-                            ->imageEditor() // ইমেজ ক্রপ করার অপশন
-                            ->imageCropAspectRatio('1:1') // সবসময় স্কয়ার ছবি
-                            ->imageResizeTargetWidth('600')
-                            ->imageResizeTargetHeight('600')
+                            ->imageEditor() 
+                            ->imageCropAspectRatio('1:1') 
                             ->columnSpanFull(),
                     ])->columns(2),
             ]);
@@ -71,21 +88,26 @@ class CategoryResource extends Resource
         return $table
             ->columns([
                 ImageColumn::make('image')
-                    ->circular(),
+                    ->label('Thumbnail')
+                    ->circular()
+                    ->defaultImageUrl(url('/images/placeholder.png')),
                 
                 TextColumn::make('name')
                     ->label('Category Name')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight('bold')
+                    ->icon(fn (Category $record): ?string => $record->icon) 
+                    ->iconColor('primary'), // আইকন নীল কালার দেখাবে
 
                 TextColumn::make('parent.name')
                     ->label('Hierarchy')
-                    ->sortable()
                     ->default('Main Category')
                     ->badge()
                     ->color(fn (?string $state): string => $state === 'Main Category' ? 'success' : 'info'),
 
                 TextColumn::make('slug')
+                    ->label('Slug')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
@@ -95,6 +117,7 @@ class CategoryResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

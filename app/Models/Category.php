@@ -10,7 +10,7 @@ class Category extends Model
     use HasFactory;
 
     // parent_id অবশ্যই এখানে থাকতে হবে, নতুবা সাব-ক্যাটাগরি সেভ হবে না
-    protected $fillable = ['name', 'slug', 'image', 'parent_id'];
+    protected $fillable = ['name', 'slug', 'parent_id', 'image', 'icon'];
 
     /**
      * প্যারেন্ট ক্যাটাগরি খুঁজে পেতে
