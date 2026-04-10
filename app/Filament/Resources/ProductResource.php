@@ -15,9 +15,10 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Toggle; // নতুন যুক্ত করা হয়েছে
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\IconColumn; // নতুন যুক্ত করা হয়েছে
 use Filament\Forms\Set;
 use Illuminate\Support\Str;
 
@@ -25,77 +26,109 @@ class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-bag'; // আইকন পরিবর্তন করা হয়েছে
+    protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Grid::make(3) // পুরো ফর্মকে ৩ কলামে ভাগ করা হয়েছে
+                Grid::make(3)
                     ->schema([
-                        Section::make('Product Information')
-                            ->description('Basic details about the product.')
+                        // বাম পাশের কলাম (Product Info & Media)
+                        Grid::make(1)
                             ->schema([
-                                TextInput::make('name')
-                                    ->required()
-                                    ->live(onBlur: true)
-                                    ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', Str::slug($state))),
+                                Section::make('Product Information')
+                                    ->description('Basic details about the product.')
+                                    ->schema([
+                                        TextInput::make('name')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->live(onBlur: true)
+                                            ->afterStateUpdated(function (Set $set, ?string $state) {
+                                                $set('slug', Str::slug($state));
+                                                // নাম লিখলে অটোমেটিক একটি প্রোবেবল SKU কোড জেনারেট হবে
+                                                $set('sku', strtoupper(Str::random(4)) . '-' . rand(1000, 9999));
+                                            }),
 
-                                TextInput::make('slug')
-                                    ->required()
-                                    ->disabled()
-                                    ->dehydrated(),
+                                        TextInput::make('slug')
+                                            ->required()
+                                            ->disabled()
+                                            ->dehydrated()
+                                            ->unique(Product::class, 'slug', ignoreRecord: true),
 
-                                Select::make('category_id')
-                                    ->relationship('category', 'name')
-                                    ->required()
-                                    ->searchable()
-                                    ->preload(),
+                                        Select::make('category_id')
+                                            ->relationship('category', 'name')
+                                            ->required()
+                                            ->searchable()
+                                            ->preload(),
 
-                                TextInput::make('unit')
-                                    ->label('Unit (e.g., 1kg, 500g, 1pc)')
-                                    ->placeholder('Ex: 1 kg')
-                                    ->required(),
+                                        TextInput::make('unit')
+                                            ->label('Unit (e.g., 1kg, 1pc)')
+                                            ->placeholder('Ex: 1 kg')
+                                            ->required(),
+                                    ])->columns(2),
+
+                                Section::make('Product Media & Description')
+                                    ->schema([
+                                        FileUpload::make('image')
+                                            ->image()
+                                            ->directory('products')
+                                            ->disk('public') // ইমেজ শো করার জন্য এটি নিশ্চিত করুন
+                                            ->imageEditor()
+                                            ->columnSpanFull(),
+
+                                        RichEditor::make('description')
+                                            ->columnSpanFull(),
+                                    ]),
                             ])->columnSpan(2),
 
-                        Section::make('Pricing & Stock')
+                        // ডান পাশের কলাম (Pricing, Stock & Status)
+                        Grid::make(1)
                             ->schema([
-                                TextInput::make('price')
-                                    ->label('Regular Price')
-                                    ->numeric()
-                                    ->prefix('৳')
-                                    ->required(),
+                                Section::make('Pricing & Stock')
+                                    ->schema([
+                                        TextInput::make('price')
+                                            ->label('Regular Price')
+                                            ->numeric()
+                                            ->prefix('৳')
+                                            ->minValue(0) // নেগেটিভ প্রাইস বন্ধ করতে
+                                            ->required(),
 
-                                TextInput::make('discount_price')
-                                    ->label('Discount Price (Optional)')
-                                    ->numeric()
-                                    ->prefix('৳'),
+                                        TextInput::make('discount_price')
+                                            ->label('Discount Price')
+                                            ->numeric()
+                                            ->prefix('৳')
+                                            ->minValue(0),
 
-                                TextInput::make('stock_quantity')
-                                    ->label('Stock Quantity')
-                                    ->numeric()
-                                    ->default(0)
-                                    ->required(),
+                                        TextInput::make('stock_quantity')
+                                            ->label('Current Stock')
+                                            ->numeric()
+                                            ->default(0)
+                                            ->minValue(0)
+                                            ->required(),
 
-                                TextInput::make('sku')
-                                    ->label('SKU Code')
-                                    ->unique(ignoreRecord: true),
+                                        TextInput::make('sku')
+                                            ->label('SKU Code')
+                                            ->unique(ignoreRecord: true),
 
-                                TextInput::make('barcode')
-                                    ->label('Barcode (for POS)')
-                                    ->unique(ignoreRecord: true),
+                                        TextInput::make('barcode')
+                                            ->label('Barcode (POS)')
+                                            ->unique(ignoreRecord: true),
+                                    ]),
+
+                                Section::make('Availability')
+                                    ->schema([
+                                        Toggle::make('status')
+                                            ->label('Active Status')
+                                            ->helperText('Enable or disable product visibility')
+                                            ->default(true),
+
+                                        Toggle::make('is_featured')
+                                            ->label('Featured Product')
+                                            ->helperText('Show on home page featured section')
+                                            ->default(false),
+                                    ]),
                             ])->columnSpan(1),
-
-                        Section::make('Product Media & Description')
-                            ->schema([
-                                FileUpload::make('image')
-                                    ->image()
-                                    ->directory('products')
-                                    ->imageEditor(), // ছবি ক্রপ করার সুবিধা
-
-                                RichEditor::make('description')
-                                    ->columnSpanFull(),
-                            ])->columnSpanFull(),
                     ]),
             ]);
     }
@@ -104,7 +137,8 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                ImageColumn::make('image'),
+                ImageColumn::make('image')
+                    ->disk('public'), // ইমেজ শো করার জন্য গুরুত্বপূর্ণ
                 
                 TextColumn::make('name')
                     ->searchable()
@@ -112,10 +146,10 @@ class ProductResource extends Resource
                     ->description(fn (Product $record): string => $record->unit ?? ''),
 
                 TextColumn::make('category.name')
-                    ->sortable(),
+                    ->sortable()
+                    ->badge(),
 
                 TextColumn::make('price')
-                    ->label('Price')
                     ->money('BDT')
                     ->sortable(),
 
@@ -128,10 +162,17 @@ class ProductResource extends Resource
                         $state <= 20 => 'warning',
                         default => 'success',
                     }),
+
+                IconColumn::make('status')
+                    ->label('Active')
+                    ->boolean()
+                    ->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('category')
                     ->relationship('category', 'name'),
+                Tables\Filters\TernaryFilter::make('status')
+                    ->label('Active Status'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
