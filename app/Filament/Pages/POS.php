@@ -17,19 +17,27 @@ class POS extends Page
     protected static string $view = 'filament.pages.p-o-s';
     protected static ?string $navigationGroup = 'Sales';
     
-    // ১. প্রপার্টিগুলো সবসময় এখানে (ফাংশনের বাইরে) থাকতে হবে
     public $customer_id = null;
     public $selectedLanguage = 'en';
     public $cart = [];
     public $search = ''; 
+    // ডিসকাউন্ট প্রপার্টি যুক্ত করা হলো
+    public $discount = 0; 
 
-    // ২. মাউন্ট ফাংশনে শুধুমাত্র ভ্যালু এসাইন করা হয়
     public function mount()
     {
         $this->customer_id = null;
         $this->selectedLanguage = 'en';
         $this->cart = [];
         $this->search = '';
+        $this->discount = 0;
+    }
+
+    // কার্টের মোট টাকা হিসাব করার জন্য কম্পিউটেড প্রপার্টি
+    public function getTotalProperty()
+    {
+        $subtotal = collect($this->cart)->sum(fn($i) => $i['price'] * $i['quantity']);
+        return $subtotal - (float) $this->discount;
     }
 
     public function addToCart($productId)
@@ -68,13 +76,13 @@ class POS extends Page
             return;
         }
 
-        $currentCart = $this->cart;
-        $total = collect($currentCart)->sum(fn($i) => $i['price'] * $i['quantity']);
+        // getTotalProperty ব্যবহার করে নিট টোটাল নেওয়া হচ্ছে
+        $total = $this->total;
 
         try {
-            $pdfData = DB::transaction(function () use ($total, $currentCart) {
+            $pdfData = DB::transaction(function () use ($total) {
+                $currentCart = $this->cart;
                 
-                // স্টক চেক ও আপডেট
                 foreach ($currentCart as $id => $item) {
                     $product = Product::find($id);
                     if (!$product || $product->stock_quantity < $item['quantity']) {
@@ -83,14 +91,13 @@ class POS extends Page
                     $product->decrement('stock_quantity', $item['quantity']);
                 }
 
-                // অর্ডার তৈরি
                 $order = Order::create([
                     'user_id'      => $this->customer_id,
                     'total_amount' => $total,
                     'status'       => 'delivered',
+                    // প্রয়োজনে ডিসকাউন্ট কলাম ডেটাবেসে থাকলে এখানে যোগ করতে পারেন
                 ]);
 
-                // অর্ডার আইটেম সেভ করা
                 foreach ($currentCart as $id => $item) {
                     OrderItem::create([
                         'order_id'   => $order->id,
@@ -100,11 +107,11 @@ class POS extends Page
                     ]);
                 }
 
-                // PDF জেনারেশন
                 $pdf = Pdf::loadView('invoices.pos-invoice', [
                     'order' => $order,
                     'cart'  => $currentCart,
-                    'lang'  => $this->selectedLanguage
+                    'lang'  => $this->selectedLanguage,
+                    'discount' => $this->discount
                 ])->setPaper([0, 0, 226.77, 600], 'portrait')
                   ->setOptions([
                         'isHtml5ParserEnabled' => true,
@@ -120,6 +127,7 @@ class POS extends Page
 
             $this->cart = [];
             $this->customer_id = null;
+            $this->discount = 0;
             Notification::make()->title('অর্ডার সফল হয়েছে!')->success()->send();
 
             return response()->streamDownload(function () use ($pdfData) {
@@ -142,8 +150,9 @@ class POS extends Page
 
     public function getProducts()
     {
-        return Product::query()
+        return \App\Models\Product::query()
             ->where('name', 'like', "%{$this->search}%")
+            ->orWhere('barcode', $this->search)
             ->get();
     }
 }

@@ -32,7 +32,7 @@
 </head>
 <body>
     <div class="header">
-        <strong>Kids&WomensFashion</strong><br>
+        <strong>NEW MARKET BD</strong><br>
         @if($lang == 'bn')
             ইনভয়েস নং: #{{ $order->order_number ?? $order->id }}<br>
             তারিখ: {{ $order->created_at->format('d/m/Y h:i A') }}
