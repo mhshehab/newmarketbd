@@ -16,6 +16,7 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Toggle; // নতুন যুক্ত করা হয়েছে
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\IconColumn; // নতুন যুক্ত করা হয়েছে
@@ -111,6 +112,13 @@ class ProductResource extends Resource
                                             ->minValue(0)
                                             ->required(),
 
+                                        DatePicker::make('expiry_date')
+                                            ->label('মেয়াদ')
+                                            ->required()
+                                            ->placeholder('তারিখ সিলেক্ট করুন')
+                                            ->native(false)
+                                            ->displayFormat('d/m/Y'),
+
                                         TextInput::make('sku')
                                             ->label('SKU Code')
                                             ->unique(ignoreRecord: true),
@@ -166,6 +174,13 @@ class ProductResource extends Resource
                         $state <= 20 => 'warning',
                         default => 'success',
                     }),
+
+                TextColumn::make('expiry_date')
+                    ->label('মেয়াদ')
+                    ->date()
+                    ->sortable()
+                    ->color(fn (Product $record): string => $record->expiry_date && $record->expiry_date->isPast() ? 'danger' : 'success')
+                    ->description(fn (Product $record): string => $record->expiry_date && $record->expiry_date->isPast() ? 'মেয়াদ শেষ!' : ''),
 
                 IconColumn::make('status')
                     ->label('Active')

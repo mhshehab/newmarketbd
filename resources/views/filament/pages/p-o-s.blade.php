@@ -11,21 +11,53 @@
                     </select>
                 </div>
 
-                <div class="min-w-[250px]">
-                    <select wire:model.live="customer_id" class="border rounded p-1 w-full text-sm dark:bg-gray-700">
-                        <option value="">কাস্টমার সিলেক্ট করুন</option>
-                        @foreach($this->getCustomers() as $customer)
-                            <option value="{{ $customer->id }}">{{ $customer->name }}</option>
-                        @endforeach
-                    </select>
+                <div class="min-w-[300px] relative" x-data="{ open: false }">
+                    <input type="text" 
+                           wire:model.live="customer_search" 
+                           placeholder="নাম বা মোবাইল নাম্বার লিখুন..." 
+                           class="border rounded p-2 w-full text-sm dark:bg-gray-700 focus:ring-primary-500"
+                           @click="open = true"
+                           @click.away="open = false">
+
+                    <div x-show="open && $wire.customer_search.length > 0" 
+                         class="absolute z-50 w-full bg-white dark:bg-gray-800 border rounded-b-lg shadow-xl mt-1 max-h-60 overflow-y-auto">
+                        @forelse($this->getCustomers() as $customer)
+                            <div wire:click="selectCustomer({{ $customer->id }}, '{{ str_replace("'", "\\'", $customer->name) }}')" 
+                                 class="p-2 hover:bg-primary-50 dark:hover:bg-gray-700 cursor-pointer border-b last:border-0">
+                                <p class="font-bold text-sm">{{ $customer->name }}</p>
+                                <p class="text-xs text-gray-500">{{ $customer->phone ?? 'নাম্বার নেই' }}</p>
+                            </div>
+                        @empty
+                            <p class="p-2 text-xs text-gray-400">কোনো কাস্টমার পাওয়া যায়নি</p>
+                        @endforelse
+                    </div>
+                    
+                    @if($customer_id)
+                        <div class="mt-1 text-[10px] text-success-600 font-bold">
+                            সিলেক্টেড: {{ \App\Models\User::find($customer_id)?->name }}
+                        </div>
+                    @endif
                 </div>
             </div>
             
             <div class="flex items-center gap-2">
                 <span class="text-xs text-gray-400 italic">অটো-আপডেট হচ্ছে...</span>
-                <input type="text" placeholder="পণ্য বা বারকোড..." 
-                       class="border rounded px-3 py-1 dark:bg-gray-700 focus:ring-primary-500 w-64" 
-                       wire:model.live="search">
+                <div class="flex flex-col relative">
+                    <input type="text" placeholder="পণ্য টাইপ করুন বা বারকোড স্ক্যান করুন..." 
+                           autocomplete="off"
+                           class="border rounded px-3 py-1 dark:bg-gray-700 focus:ring-primary-500 w-64" 
+                           wire:model.live="search">
+                    @if($search)
+                        <button type="button" wire:click="clearSearch"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                            ক্লিয়ার
+                        </button>
+                    @endif
+                    <p class="text-[10px] text-gray-500 mt-1">বারকোড স্ক্যান করলে পণ্যটি স্বয়ংক্রিয়ভাবে কার্টে যোগ হবে।</p>
+                    @if($barcode_not_found)
+                        <p class="text-[11px] text-red-600 mt-1">বারকোড পাওয়া যায়নি। সঠিক কোড বা ম্যানুয়ালি সার্চ করুন।</p>
+                    @endif
+                </div>
             </div>
         </div>
         
@@ -34,7 +66,6 @@
 
             <div class="grid grid-cols-3 gap-4" wire:poll.5s> 
                 @foreach($this->getProducts() as $product)
-                {{-- Low Stock হলে বর্ডার এবং ব্যাকগ্রাউন্ড পরিবর্তন হবে --}}
                 <div class="border p-3 rounded-lg hover:bg-primary-50 dark:hover:bg-gray-700 cursor-pointer transition relative flex flex-col justify-between
                     {{ $product->stock_quantity <= $product->low_stock_threshold ? 'bg-red-50 border-red-400 dark:bg-red-900/20 dark:border-red-800' : 'dark:border-gray-700 bg-white dark:bg-gray-800' }}" 
                      wire:click="addToCart({{ $product->id }})">
@@ -45,7 +76,6 @@
                     </div>
                     
                     <div class="mt-2 flex flex-col gap-1">
-                        {{-- Stock Status --}}
                         <div class="flex justify-between items-center">
                             <span class="text-[10px] px-2 py-0.5 rounded {{ $product->stock_quantity <= $product->low_stock_threshold ? 'bg-red-600 text-white' : 'bg-success-600 text-white' }}">
                                 স্টক: {{ $product->stock_quantity }}
@@ -56,15 +86,13 @@
                             @endif
                         </div>
 
-                        {{-- Expiry Date --}}
                         <p class="text-[10px] text-gray-500">
-                            মেয়াদ: <span class="{{ $product->expiry_date < now() ? 'text-red-500 font-bold' : '' }}">
-                                {{ $product->expiry_date ?? 'N/A' }}
+                            মেয়াদ: <span class="{{ ($product->expiry_date && \Carbon\Carbon::parse($product->expiry_date)->isPast()) ? 'text-red-500 font-bold' : '' }}">
+                                {{ $product->expiry_date ? \Carbon\Carbon::parse($product->expiry_date)->format('d M, Y') : 'N/A' }}
                             </span>
                         </p>
                     </div>
 
-                    {{-- Stock Out Overlay --}}
                     @if($product->stock_quantity <= 0)
                         <div class="absolute inset-0 bg-gray-100/60 dark:bg-gray-900/60 flex items-center justify-center rounded-lg z-10">
                             <span class="bg-red-600 text-white text-[10px] px-2 py-1 rounded uppercase font-bold shadow-sm">Stock Out</span>
@@ -81,11 +109,28 @@
             <div class="flex-grow overflow-y-auto pr-2">
                 @forelse($cart as $id => $item)
                 <div class="flex justify-between items-center mb-3 bg-gray-50 dark:bg-gray-700 p-2 rounded shadow-sm border-l-4 border-primary-500">
-                    <div>
+                    <div class="flex-grow">
                         <p class="font-medium text-sm">{{ $item['name'] }}</p>
-                        <p class="text-[10px] text-gray-500">{{ $item['quantity'] }} x ৳{{ $item['price'] }}</p>
+                        <div class="flex items-center gap-2 mt-1">
+                            <button wire:click="decreaseQuantity({{ $id }})" 
+                                    class="bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded text-sm hover:bg-gray-300 transition">-</button>
+                            
+                            <span class="font-bold text-xs">{{ $item['quantity'] }}</span>
+                            
+                            <button wire:click="addToCart({{ $id }})" 
+                                    class="bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded text-sm hover:bg-gray-300 transition">+</button>
+                            
+                            <span class="text-[10px] text-gray-500 ml-1">x ৳{{ $item['price'] }}</span>
+                        </div>
                     </div>
-                    <p class="font-bold text-sm text-primary-600">৳{{ $item['quantity'] * $item['price'] }}</p>
+                    <div class="flex items-center gap-3">
+                        <p class="font-bold text-sm text-primary-600">৳{{ $item['quantity'] * $item['price'] }}</p>
+                        <button wire:click="removeFromCart({{ $id }})" class="text-red-500 hover:text-red-700 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 @empty
                 <div class="text-center mt-10">
@@ -94,17 +139,54 @@
                 @endforelse
             </div>
 
-            <div class="border-t pt-4 mt-auto">
-                <div class="flex justify-between text-xl font-black mb-4 text-primary-600">
-                    <span>মোট:</span>
+            <div class="border-t pt-4 mt-auto space-y-3 bg-gray-50 dark:bg-gray-800 p-4 rounded-b-xl">
+                
+                <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                    <span>সাবটোটাল:</span>
                     <span>৳{{ collect($cart)->sum(fn($i) => $i['price'] * $i['quantity']) }}</span>
+                </div>
+
+                <div class="flex items-center justify-between gap-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg shadow-sm">
+                    <div class="flex flex-col">
+                        <label class="text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase">ডিসকাউন্ট টাইপ</label>
+                        <select wire:model.live="discount_type" class="border-none bg-transparent text-xs p-0 focus:ring-0 font-semibold cursor-pointer">
+                            <option value="fixed">টাকা (৳)</option>
+                            <option value="percent">শতাংশ (%)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex flex-col items-end">
+                        <label for="discount" class="text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase">পরিমাণ</label>
+                        <div class="flex items-center">
+                            <input type="number" 
+                                   id="discount"
+                                   wire:model.live="discount" 
+                                   placeholder="0"
+                                   class="w-20 text-right border-none rounded bg-white dark:bg-gray-700 text-sm font-bold focus:ring-2 focus:ring-primary-500 py-1"
+                                   min="0">
+                            <span class="ml-1 font-bold text-sm">
+                                {{ $discount_type === 'percent' ? '%' : '৳' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center text-2xl font-black text-primary-600 border-t border-dashed pt-2">
+                    <span>মোট:</span>
+                    {{-- $this->total ব্যবহার করা হয়েছে যা POS.php থেকে ক্যালকুলেট হবে --}}
+                    <span>৳{{ number_format($this->total, 2) }}</span>
                 </div>
                 
                 <button wire:click="checkout" 
-                        class="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-4 rounded-lg shadow-lg active:scale-95 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        class="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-4 rounded-lg shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:shadow-none"
                         x-bind:disabled="!isOnline || {{ count($cart) === 0 ? 'true' : 'false' }}">
+                    
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+
                     <span x-show="isOnline">অর্ডার সম্পন্ন করুন (F2)</span>
-                    <span x-show="!isOnline" x-cloak>অফলাইনে আছেন</span>
+                    <span x-show="!isOnline" x-cloak>অফলাইন (পেমেন্ট বন্ধ)</span>
                 </button>
             </div>
         </div>

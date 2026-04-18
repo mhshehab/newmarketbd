@@ -71,6 +71,26 @@
         {{ number_format($order->total_amount, 2) }}
     </div>
 
+    <div style="text-align: center; margin-top: 15px; padding: 10px; border-top: 1px dashed #ccc;">
+        @php
+            // অর্ডার নাম্বার বা আইডি দিয়ে বারকোড তৈরি
+            $barcodeValue = $order->order_number ?? $order->id;
+        @endphp
+
+        {{-- বারকোড জেনারেশন --}}
+        <div style="margin-bottom: 5px;">
+            {!! DNS1D::getBarcodeHTML($barcodeValue, 'C128', 1.4, 40) !!}
+        </div>
+        
+        <span style="font-family: monospace; font-size: 12px; letter-spacing: 2px;">
+            * {{ $barcodeValue }} *
+        </span>
+        
+        <p style="font-size: 10px; color: #666; margin-top: 5px;">
+            ধন্যবাদ, আবার আসবেন!
+        </p>
+    </div>
+
     <div class="header" style="margin-top: 15px; font-size: 9px;">
         {{ $lang == 'bn' ? 'কেনাকাটার জন্য ধন্যবাদ!' : 'Thank you for shopping!' }}<br>
         Powered by YourEcommerce

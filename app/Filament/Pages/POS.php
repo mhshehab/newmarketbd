@@ -21,8 +21,11 @@ class POS extends Page
     public $selectedLanguage = 'en';
     public $cart = [];
     public $search = ''; 
+    public $customer_search = '';
+    public $barcode_not_found = false;
     // ডিসকাউন্ট প্রপার্টি যুক্ত করা হলো
-    public $discount = 0; 
+    public $discount = 0;
+    public $discount_type = 'fixed';
 
     public function mount()
     {
@@ -30,13 +33,21 @@ class POS extends Page
         $this->selectedLanguage = 'en';
         $this->cart = [];
         $this->search = '';
+        $this->customer_search = '';
         $this->discount = 0;
+        $this->discount_type = 'fixed';
     }
 
     // কার্টের মোট টাকা হিসাব করার জন্য কম্পিউটেড প্রপার্টি
     public function getTotalProperty()
     {
         $subtotal = collect($this->cart)->sum(fn($i) => $i['price'] * $i['quantity']);
+
+        if ($this->discount_type === 'percent') {
+            $discountAmount = $subtotal * ((float) $this->discount / 100);
+            return $subtotal - $discountAmount;
+        }
+
         return $subtotal - (float) $this->discount;
     }
 
@@ -44,7 +55,21 @@ class POS extends Page
     {
         $product = Product::find($productId);
 
-        if (!$product || $product->stock_quantity <= 0) {
+        if (!$product) {
+            Notification::make()->title('পণ্যটি পাওয়া যায়নি।')->danger()->send();
+            return;
+        }
+
+        if ($product->expiry_date && $product->expiry_date < now()) {
+            Notification::make()
+                ->title('সতর্কতা!')
+                ->body('এই পণ্যটির মেয়াদ শেষ হয়ে গেছে।')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        if ($product->stock_quantity <= 0) {
             Notification::make()->title('স্টক নেই!')->danger()->send();
             return;
         }
@@ -61,6 +86,29 @@ class POS extends Page
                 'price' => $product->price,
                 'quantity' => 1,
             ];
+        }
+    }
+
+    public function decreaseQuantity($productId)
+    {
+        if (isset($this->cart[$productId])) {
+            if ($this->cart[$productId]['quantity'] > 1) {
+                $this->cart[$productId]['quantity']--;
+            } else {
+                // পরিমাণ ১ এর কম হলে আইটেমটি কার্ট থেকে সরিয়ে ফেলবে
+                $this->removeFromCart($productId);
+            }
+        }
+    }
+
+    public function removeFromCart($productId)
+    {
+        if (isset($this->cart[$productId])) {
+            unset($this->cart[$productId]);
+            Notification::make()
+                ->title('পণ্যটি কার্ট থেকে সরানো হয়েছে')
+                ->success()
+                ->send();
         }
     }
 
@@ -145,7 +193,47 @@ class POS extends Page
 
     public function getCustomers()
     {
-        return User::all();
+        return \App\Models\User::query()
+            ->where('name', 'like', "%{$this->customer_search}%")
+            ->orWhere('phone', 'like', "%{$this->customer_search}%")
+            ->limit(10)
+            ->get();
+    }
+
+    public function selectCustomer($id, $name)
+    {
+        $this->customer_id = $id;
+        $this->customer_search = $name;
+        $this->barcode_not_found = false;
+    }
+
+    public function updatedSearch($value)
+    {
+        $barcode = trim((string) $value);
+        $this->barcode_not_found = false;
+
+        if ($barcode === '') {
+            return;
+        }
+
+        if (!preg_match('/^\d+$/', $barcode) || strlen($barcode) < 3) {
+            return;
+        }
+
+        $product = Product::where('barcode', $barcode)->first();
+
+        if ($product) {
+            $this->addToCart($product->id);
+            $this->search = '';
+        } else {
+            $this->barcode_not_found = true;
+        }
+    }
+
+    public function clearSearch()
+    {
+        $this->search = '';
+        $this->barcode_not_found = false;
     }
 
     public function getProducts()

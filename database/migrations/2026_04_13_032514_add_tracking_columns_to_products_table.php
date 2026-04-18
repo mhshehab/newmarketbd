@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            // বারকোড স্ক্যানিং সহজ করতে (নামের পরে থাকবে)
-            $table->string('barcode')->unique()->nullable()->after('name');
+            // বারকোড কলাম ইতিমধ্যে আছে, তাই এখানে আর যোগ করা হবে না
+            // $table->string('barcode')->unique()->nullable()->after('name');
 
             // লো-স্টক অ্যালার্ট থ্রেশহোল্ড (ডিফল্ট ১০ সেট করা হয়েছে)
             $table->integer('low_stock_threshold')->default(10)->after('stock_quantity');

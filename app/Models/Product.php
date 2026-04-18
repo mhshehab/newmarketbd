@@ -19,9 +19,17 @@ class Product extends Model
         'description', 
         'price', 
         'stock_quantity', 
+        'expiry_date',
         'image', 
         'status'
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'expiry_date' => 'date',
+        ];
+    }
 
     /**
      * অটোমেটিক SKU এবং Barcode জেনারেট করার লজিক
