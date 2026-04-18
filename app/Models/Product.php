@@ -19,6 +19,9 @@ class Product extends Model
         'description', 
         'price', 
         'stock_quantity', 
+        'low_stock_threshold',
+        'is_weighted_product',
+        'weight_per_unit',
         'expiry_date',
         'image', 
         'status'
@@ -28,6 +31,8 @@ class Product extends Model
     {
         return [
             'expiry_date' => 'date',
+            'is_weighted_product' => 'boolean',
+            'weight_per_unit' => 'decimal:3',
         ];
     }
 

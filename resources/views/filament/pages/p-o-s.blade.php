@@ -3,6 +3,12 @@
         
         <div class="col-span-12 flex justify-between items-center bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm mb-2">
             <div class="flex items-center gap-4">
+                <!-- Offline Status Indicator -->
+                <div class="flex items-center gap-2" x-data="{ isOnline: navigator.onLine }" x-init="window.addEventListener('online', () => isOnline = true); window.addEventListener('offline', () => isOnline = false);">
+                    <div class="w-3 h-3 rounded-full" :class="isOnline ? 'bg-green-500' : 'bg-red-500 animate-pulse'"></div>
+                    <span class="text-sm font-bold" :class="isOnline ? 'text-green-600' : 'text-red-600'" x-text="isOnline ? 'Online' : 'Offline'"></span>
+                </div>
+                
                 <div class="flex items-center gap-2">
                     <label for="lang" class="font-bold text-sm">ভাষা:</label>
                     <select wire:model.live="selectedLanguage" id="lang" class="border rounded p-1 text-sm bg-white dark:bg-gray-700">
@@ -107,7 +113,7 @@
             <h2 class="text-xl font-bold mb-4 border-b pb-2">কার্ট (অর্ডার)</h2>
             
             <div class="flex-grow overflow-y-auto pr-2">
-                @forelse($cart as $id => $item)
+                @forelse($this->cart as $id => $item)
                 <div class="flex justify-between items-center mb-3 bg-gray-50 dark:bg-gray-700 p-2 rounded shadow-sm border-l-4 border-primary-500">
                     <div class="flex-grow">
                         <p class="font-medium text-sm">{{ $item['name'] }}</p>
@@ -143,12 +149,116 @@
                 
                 <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                     <span>সাবটোটাল:</span>
-                    <span>৳{{ collect($cart)->sum(fn($i) => $i['price'] * $i['quantity']) }}</span>
+                    <span>Tk{{ collect($this->cart)->sum(fn($i) => $i['price'] * $i['quantity']) }}</span>
+                </div>
+
+                <!-- Weighing Scale Display -->
+                @if($this->selected_weighted_product)
+                <div class="flex items-center justify-between gap-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-lg shadow-sm">
+                    <div class="flex flex-col">
+                        <label class="text-[10px] font-bold text-green-700 dark:text-green-300 uppercase">Weighing Scale</label>
+                        <span class="text-xs font-semibold">{{ \App\Models\Product::find($this->selected_weighted_product)?->name }}</span>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <span class="text-lg font-bold text-green-600">{{ $this->current_weight }} kg</span>
+                        <button wire:click="addWeightedProductToCart" class="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 transition">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+                @endif
+
+                <!-- Loyalty Points -->
+                @if($this->customer_id && $this->getCustomerLoyaltyPoints() > 0)
+                <div class="flex items-center justify-between gap-2 p-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800 rounded-lg shadow-sm">
+                    <div class="flex flex-col">
+                        <label class="text-[10px] font-bold text-purple-700 dark:text-purple-300 uppercase">Loyalty Points</label>
+                        <span class="text-xs">Available: {{ $this->getCustomerLoyaltyPoints() }} pts</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" wire:model.live="use_loyalty_points" class="rounded">
+                        @if($this->use_loyalty_points)
+                        <input type="number" 
+                               wire:model.live="points_to_redeem" 
+                               placeholder="0"
+                               class="w-16 text-right border rounded text-sm font-bold"
+                               min="0"
+                               max="{{ $this->getMaxRedeemablePoints() }}">
+                        <span class="text-xs text-purple-600">= Tk{{ $this->loyalty_discount }}</span>
+                        @endif
+                    </div>
+                </div>
+                @endif
+
+                <!-- Discount Code -->
+                <div class="flex items-center justify-between gap-2 p-2 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-lg shadow-sm">
+                    <div class="flex flex-col">
+                        <label class="text-[10px] font-bold text-indigo-700 dark:text-indigo-300 uppercase">Discount Code</label>
+                        <div class="flex items-center gap-2">
+                            <input type="text" 
+                                   wire:model.live="discount_code" 
+                                   placeholder="Enter code"
+                                   class="w-32 border rounded bg-white dark:bg-gray-700 text-sm font-bold focus:ring-2 focus:ring-primary-500 py-1">
+                            @if($this->discount_code)
+                            <button wire:click="applyDiscountCode" class="text-xs bg-indigo-600 text-white px-2 py-1 rounded hover:bg-indigo-700 transition">
+                                Apply
+                            </button>
+                            @endif
+                        </div>
+                        @if($this->applied_discount)
+                        <div class="flex items-center justify-between mt-1">
+                            <span class="text-xs text-green-600">{{ $this->applied_discount->name }} applied</span>
+                            <button wire:click="removeDiscount" class="text-xs text-red-600 hover:text-red-800">
+                                Remove
+                            </button>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Available Offers -->
+                @if(count($this->getAvailableDiscountsForCart()) > 0)
+                <div class="flex flex-col gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800 rounded-lg shadow-sm">
+                    <label class="text-[10px] font-bold text-yellow-700 dark:text-yellow-300 uppercase">Available Offers</label>
+                    @foreach($this->getAvailableDiscountsForCart() as $offer)
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-semibold">{{ $offer['discount']->name }}</span>
+                        <span class="text-yellow-600">Save Tk{{ $offer['amount'] }}</span>
+                    </div>
+                    @endforeach
+                </div>
+                @endif
+
+                <!-- Payment Method Selection -->
+                <div class="flex items-center justify-between gap-2 p-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800 rounded-lg shadow-sm">
+                    <div class="flex flex-col">
+                        <label class="text-[10px] font-bold text-orange-700 dark:text-orange-300 uppercase">Payment Method</label>
+                        <select wire:model.live="payment_method" class="border-none bg-transparent text-xs p-0 focus:ring-0 font-semibold cursor-pointer">
+                            @foreach($this->getPaymentMethods() as $key => $method)
+                            <option value="{{ $key }}">{{ $method }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    @if($this->payment_method === 'cash')
+                    <div class="flex flex-col items-end">
+                        <label for="cash_received" class="text-[10px] font-bold text-orange-700 dark:text-orange-300 uppercase">Cash Received</label>
+                        <input type="number" 
+                               id="cash_received"
+                               wire:model.live="cash_received" 
+                               placeholder="{{ $this->total }}"
+                               class="w-24 text-right border rounded bg-white dark:bg-gray-700 text-sm font-bold focus:ring-2 focus:ring-primary-500 py-1"
+                               min="0">
+                        @if($this->change_amount > 0)
+                        <span class="text-xs text-green-600">Change: Tk{{ $this->change_amount }}</span>
+                        @endif
+                    </div>
+                    @endif
                 </div>
 
                 <div class="flex items-center justify-between gap-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg shadow-sm">
                     <div class="flex flex-col">
-                        <label class="text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase">ডিসকাউন্ট টাইপ</label>
+                        <label class="text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase">Discount Type</label>
                         <select wire:model.live="discount_type" class="border-none bg-transparent text-xs p-0 focus:ring-0 font-semibold cursor-pointer">
                             <option value="fixed">টাকা (৳)</option>
                             <option value="percent">শতাংশ (%)</option>
@@ -165,13 +275,13 @@
                                    class="w-20 text-right border-none rounded bg-white dark:bg-gray-700 text-sm font-bold focus:ring-2 focus:ring-primary-500 py-1"
                                    min="0">
                             <span class="ml-1 font-bold text-sm">
-                                {{ $discount_type === 'percent' ? '%' : '৳' }}
+                                {{ $this->discount_type === 'percent' ? '%' : 'Tk' }}
                             </span>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex justify-between items-center text-2xl font-black text-primary-600 border-t border-dashed pt-2">
+                <div class="flex items-center justify-between text-2xl font-black text-primary-600 border-t border-dashed pt-2">
                     <span>মোট:</span>
                     {{-- $this->total ব্যবহার করা হয়েছে যা POS.php থেকে ক্যালকুলেট হবে --}}
                     <span>৳{{ number_format($this->total, 2) }}</span>
@@ -179,7 +289,7 @@
                 
                 <button wire:click="checkout" 
                         class="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-4 rounded-lg shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:shadow-none"
-                        x-bind:disabled="!isOnline || {{ count($cart) === 0 ? 'true' : 'false' }}">
+                        x-bind:disabled="!isOnline || {{ count($this->cart) === 0 ? 'true' : 'false' }}">
                     
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />

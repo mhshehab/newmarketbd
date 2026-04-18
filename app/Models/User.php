@@ -21,6 +21,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'address',
+        'role',
+        'loyalty_points',
+        'loyalty_points_expire_at',
     ];
 
     /**
@@ -43,6 +48,32 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'loyalty_points_expire_at' => 'date',
         ];
+    }
+
+    public function loyaltyPoints()
+    {
+        return $this->hasMany(LoyaltyPoint::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function getTotalSpentAttribute()
+    {
+        return $this->orders()->where('status', 'delivered')->sum('total_amount');
+    }
+
+    public function canRedeemPoints($points)
+    {
+        return $this->loyalty_points >= $points;
+    }
+
+    public function getAvailablePointsValue()
+    {
+        return LoyaltyPoint::getPointsValue($this->loyalty_points);
     }
 }
