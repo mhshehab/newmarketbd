@@ -3,6 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\ProductController;
+use Illuminate\Support\Facades\Cache;
+use App\Models\Setting;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,9 +17,17 @@ use App\Http\Controllers\CategoryController;
 // পাবলিক রাউট (ক্রেতাদের জন্য)
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/category/{slug}', [CategoryController::class, 'show'])->name('category.show');
+Route::get('/product/{slug}', [ProductController::class, 'show'])->name('products.show');
+
+// Search routes
+Route::get('/search', [SearchController::class, 'search'])->name('search');
+Route::get('/search/autocomplete', [SearchController::class, 'autocomplete'])->name('search.autocomplete');
 
 // নোট: অ্যাডমিন প্যানেলের জন্য আলাদা রাউট এখানে প্রয়োজন নেই। 
 // ফিলামেন্ট অটোমেটিক '/admin' রাউটটি হ্যান্ডেল করবে।
+
+// POS Invoice Download Route
+Route::get('/pos/invoice/{id}/download', [App\Http\Controllers\POSInvoiceController::class, 'download'])->name('pos.invoice.download');
 
 // Test notification route (for debugging)
 Route::get('/test-notification', function () {
@@ -49,6 +61,19 @@ Route::get('/test-notification', function () {
     $user->notifications()->save($notification);
     
     return 'Test notification created! <a href="/admin">Go to Admin Panel</a>';
+});
+
+// Cache Fix Route (Temporary - for fixing wrong cached data)
+Route::get('/fix-cache', function () {
+    // নির্দিষ্ট কী (Key) অনুযায়ী ক্যাশ মোছা
+    Cache::forget('settings.website_logo');
+    Cache::forget('settings.website_name');
+    Cache::forget('settings.website_title');
+    
+    // অথবা সব সেটিংসের ক্যাশ একবারেই মুছে ফেলা
+    Cache::flush();
+    
+    return "Cache Cleared! All settings cache has been removed. <a href='/admin'>Go to Admin Panel</a>";
 });
 
 /*

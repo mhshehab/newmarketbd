@@ -17,151 +17,161 @@ POS (Point of Sale) System is a comprehensive retail management solution designe
 - **Offline Mode**: Continue operations even without internet
 - **Comprehensive Reporting**: Detailed sales and performance analytics
 
+### 1.3. রিয়েল-টাইম ইনভেন্টরি সিস্টেম
+- **স্বয়ংক্রিয় অর্ডার ম্যানেজমেন্ট**: কাস্টমার অর্ডার তৈরি, স্ট্যাটাস ট্র্যাকিং, এবং ক্যান্সেলেশন
+- **বারকোড স্ক্যানিং সিস্টেম**: দ্রুত বারকোড স্ক্যানিং এবং স্বয়ংক্রিয় পণ্য যোগ
+- **ওজন স্কেল ইন্টিগ্রেশন**: ইলেকট্রনিক ওজন স্কেল সহ স্বয়ংক্রিয় পণ্য ওজন
+- **মাল্টি-পেমেন্ট গেটওয়ে**: ক্যাশ, কার্ড, বিকাশ, নগদ, রকেট, উপে সহ ৯+ পেমেন্ট মেথড
+- **CRM ও লয়েলটি পয়েন্ট সিস্টেম**: কাস্টমার লয়েলটি পয়েন্ট আর্ন এবং রিডিম্পশন
+- **ডিসকাউন্ট ও অফার ম্যানেজমেন্ট**: ফ্লেক্সিবল ডিসকাউন্ট এবং প্রমোশনাল অফার
+- **অফলাইন মোড**: ইন্টারনেট ছাড়া অপারেশন চালিয়ে সেলস
+- **কম্প্রিহেনসিভ রিপোর্টিং**: বিস্তারিত সেলস রিপোর্ট এবং অ্যানালিটিক্স
+
 ---
 
 ## 2. Core Features
 
-### 2.1. Order Management
+### 2.1. Order Management (অর্ডার ম্যানেজমেন্ট)
 
 #### Features:
-- **Order Creation**: Create new orders with customer details
-- **Order Status Tracking**: Pending, Processing, Delivered, Cancelled
-- **Order History**: Complete order history and details
-- **Order Editing**: Modify pending orders before processing
-- **Order Cancellation**: Cancel orders in pending or processing status
+- **Order Creation**: কাস্টমার সাথে নতুন অর্ডার তৈরি
+- **Order Status Tracking**: Pending, Processing, Delivered, Cancelled স্ট্যাটাস ট্র্যাকিং
+- **Order History**: সম্পূর্ণ অর্ডার ইতিহাস ও বিবরণ
+- **Order Editing**: প্রসেসিং এর আগে পেন্ডিং অর্ডার এডিট
+- **Order Cancellation**: পেন্ডিং বা প্রসেসিং স্ট্যাটাসের অর্ডার বাতিল
 
 #### How to Use:
-1. **Creating New Order**:
-   - Go to Admin Panel > POS System > Create Order
-   - Select customer from dropdown or add new customer
-   - Add products to cart using search or barcode
-   - Apply discounts if needed
-   - Select payment method
-   - Complete the order
+1. **Creating New Order (নতুন অর্ডার তৈরি)**:
+   - অ্যাডমিন প্যানেল > POS সিস্টেম > অর্ডার তৈরি
+   - ড্রপডাউন থেকে কাস্টমার সিলেক্ট করুন বা নতুন কাস্টমার যোগ করুন
+   - সার্চ বা বারকোড ব্যবহারে কার্টে পণ্য যোগ করুন
+   - প্রয়োজনীয় ডিসকাউন্ট প্রয়োজন করুন
+   - পেমেন্ট মেথড সিলেক্ট করুন
+   - অর্ডার সম্পূর্ণ করুন
 
-2. **Managing Orders**:
-   - View all orders in the POS dashboard
-   - Filter orders by status, date, or customer
-   - Click on order to view details
-   - Use action buttons to process, complete, or cancel orders
+2. **Managing Orders (অর্ডার ম্যানেজ করা)**:
+   - POS ড্যাশবোর্ডে সকল অর্ডার দেখুন
+   - স্ট্যাটাস, তারিখ, বা কাস্টমার অনুযায়ে অর্ডার ফিল্টার করুন
+   - অর্ডারের বিবরণ দেখতে ক্লিক করুন
+   - অ্যাকশন বাটন ব্যবহারে অর্ডার প্রসেস, সম্পূর্ণ, বা বাতিল করুন
 
 ---
 
-### 2.2. Customer Management
+### 2.2. Customer Management (কাস্টমার ম্যানেজমেন্ট)
 
 #### Features:
-- **Customer Selection**: Search and select existing customers
-- **Customer Information**: View customer details and purchase history
-- **Loyalty Points**: Earn and redeem loyalty points
-- **Customer Search**: Search by name, phone, or email
+- **Customer Selection**: বিদ্যমান কাস্টমার সার্চ ও সিলেক্ট
+- **Customer Information**: কাস্টমার বিবরণ ও ক্রয় হিস্টরি দেখুন
+- **Loyalty Points**: লয়েলটি পয়েন্ট আর্ন ও রিডিম্পশন
+- **Customer Search**: নাম, ফোন, বা ইমেল দিয়ে সার্চ
 
 #### How to Use:
-1. **Selecting Customer**:
-   - In order creation, click "Customer" dropdown
-   - Type customer name or phone number to search
-   - Select customer from the list
-   - Customer's available loyalty points will be displayed
+1. **Selecting Customer (কাস্টমার সিলেক্শন)**:
+   - অর্ডার তৈরিতে "Customer" ড্রপডাউনে ক্লিক করুন
+   - কাস্টমার নাম বা ফোন নম্বর টাইপ করুন
+   - লিস্ট থেকে কাস্টমার সিলেক্ট করুন
+   - কাস্টমার উপলব্ধ লয়েলটি পয়েন্ট দেখানো হবে
 
-2. **Loyalty Points System**:
-   - **Earning Points**: 1 point for every 10 Tk spent
-   - **Redeeming Points**: 100 points = 10 Tk discount
-   - Points are automatically calculated and applied
+2. **Loyalty Points System (লয়েলটি পয়েন্ট সিস্টেম)**:
+   - **Earning Points**: প্রতি ১০ টাকা খরচে ১ পয়েন্ট
+   - **Redeeming Points**: ১০০ পয়েন্ট = ১০ টাকা ডিসকাউন্ট
+   - পয়েন্ট স্বয়ংক্রিয়ভাবে ক্যালকুলেট ও প্রয়োজন করা হয়
 
 ---
 
-### 2.3. Product Management
+### 2.3. Product Management (পণ্য ম্যানেজমেন্ট)
 
 #### Features:
-- **Product Search**: Search products by name or barcode
-- **Real-time Stock**: View available stock quantities
-- **Weighted Products**: Support for items sold by weight
-- **Product Details**: View product information and pricing
+- **Product Search**: নাম বা বারকোড দিয়ে পণ্য সার্চ
+- **Real-time Stock**: বর্তমান স্টক পরিমাণ দেখুন
+- **Weighted Products**: ওজন ভিত্তিক পণ্য সমর্থন
+- **Product Details**: পণ্য তথ্য ও মূল্য দেখুন
 
 #### How to Use:
-1. **Adding Products to Cart**:
-   - Click "Add Product" button
-   - Search for product by name or scan barcode
-   - Enter quantity or weight for weighted items
-   - Product price and total will be calculated automatically
+1. **Adding Products to Cart (কার্টে পণ্য যোগ করা)**:
+   - "Add Product" বাটনে ক্লিক করুন
+   - নাম বা বারকোড দিয়ে পণ্য সার্চ করুন
+   - পরিমাণ বা ওজন লিখুন
+   - পণ্য মূল্য ও সর্বমোট স্বয়ংক্রিয়ভাবে হবে
 
-2. **Weighted Products**:
-   - Select product marked as "Weighted"
-   - Enter weight in kilograms (e.g., 1.5 kg)
-   - System calculates total price based on unit price
+2. **Weighted Products (ওজন ভিত্তিক পণ্য)**:
+   - "Weighted" চিহ্নিত পণ্য সিলেক্ট করুন
+   - ওজন কিলোগ্রামে লিখুন (যেমন, ১.৫ কেজি)
+   - সিস্টেম ইউনিট মূল্য অনুযায়ে সর্বমোট ক্যালকুলেট করবে
 
 ---
 
-### 2.4. Payment Management
+### 2.4. Payment Management (পেমেন্ট ম্যানেজমেন্ট)
 
-#### Supported Payment Methods:
-1. **Cash**: Traditional cash payments with change calculation
-2. **Credit/Debit Card**: Card payments
-3. **bKash**: Mobile banking
-4. **Nagad**: Mobile banking
-5. **Rocket**: Mobile banking
-6. **Upay**: Mobile banking
-7. **Digital Wallet**: Digital wallet payments
-8. **Gift Card**: Gift card payments
-9. **Bank Transfer**: Bank transfer payments
+#### Supported Payment Methods (সমর্থিত পেমেন্ট মেথড):
+1. **Cash (নগদ)**: প্রথাগতিক নগদ পেমেন্ট, পরিবর্তন হিসাব
+2. **Credit/Debit Card (কার্ড)**: কার্ড পেমেন্ট
+3. **bKash**: মোবাইল ব্যাংকিং
+4. **Nagad**: মোবাইল ব্যাংকিং
+5. **Rocket**: মোবাইল ব্যাংকিং
+6. **Upay**: মোবাইল ব্যাংকিং
+7. **Digital Wallet (ডিজিটাল ওয়েলেট)**: ডিজিটাল ওয়েলেট পেমেন্ট
+8. **Gift Card (গিফট কার্ড)**: গিফট কার্ড পেমেন্ট
+9. **Bank Transfer (ব্যাংক ট্রান্সফার)**: ব্যাংক ট্রান্সফার পেমেন্ট
 
-#### How to Use:
-1. **Cash Payments**:
-   - Select "Cash" as payment method
-   - Enter amount received from customer
-   - System automatically calculates change amount
-   - Complete the transaction
+#### How to Use (ব্যবহার নির্দেশিকা):
+1. **Cash Payments (নগদ পেমেন্ট)**:
+   - "Cash" পেমেন্ট মেথড সিলেক্ট করুন
+   - কাস্টমার থেকে প্রাপ্ত টাকা লিখুন
+   - সিস্টেম স্বয়ংভাবে পরিবর্তন হিসাব করবে
+   - লেনদেদেনশন সম্পূর্ণ করুন
 
-2. **Digital Payments**:
-   - Select appropriate payment method
-   - Enter transaction details if required
-   - Complete the transaction
-
----
-
-### 2.5. Discount & Offer Management
-
-#### Features:
-- **Manual Discounts**: Fixed amount or percentage discounts
-- **Discount Codes**: Apply promotional codes
-- **Loyalty Points Discount**: Redeem points for discounts
-- **Multiple Discounts**: Combine different discount types
-
-#### How to Use:
-1. **Manual Discounts**:
-   - Enter discount amount in "Manual Discount" field
-   - Select discount type: "Fixed Amount" or "Percentage"
-   - System applies discount to subtotal
-
-2. **Discount Codes**:
-   - Enter promotional code in "Discount Code" field
-   - System validates and applies the discount
-   - Discount details are displayed
-
-3. **Loyalty Points**:
-   - Enter points to redeem in "Points to Redeem" field
-   - System converts points to discount (100 points = 10 Tk)
-   - Discount is automatically applied
+2. **Digital Payments (ডিজিটাল পেমেন্ট)**:
+   - উপযুক্ত পেমেন্ট মেথড সিলেক্ট করুন
+   - প্রয়োজনীয় লেনদেন বিবরণ লিখুন
+   - লেনদেদেনশন সম্পূর্ণ করুন
 
 ---
 
-### 2.6. Inventory Management
+### 2.5. Discount & Offer Management (ডিসকাউন্ট ও অফার ম্যানেজমেন্ট)
 
 #### Features:
-- **Real-time Stock Updates**: Automatic stock reduction on sales
-- **Stock Movement Tracking**: Complete inventory movement history
-- **Low Stock Alerts**: Notifications for low stock items
-- **Stock Adjustment**: Manual stock adjustments
+- **Manual Discounts**: নির্দিষ্ট পরিমাণ বা শতাংরা ডিসকাউন্ট
+- **Discount Codes**: প্রমোশনাল কোড প্রয়োগ
+- **Loyalty Points Discount**: লয়েলটি পয়েন্ট ডিসকাউন্ট
+- **Multiple Discounts**: বিভিন্ন ধরনের ডিসকাউন্ট একসাথে প্রয়োগ
 
-#### How to Use:
-1. **Automatic Stock Management**:
-   - Stock is automatically reduced when orders are completed
-   - Stock movements are recorded for audit trail
-   - Low stock items are highlighted
+#### How to Use (ব্যবহার নির্দেশিকা):
+1. **Manual Discounts (নির্দিষ্ট ডিসকাউন্ট)**:
+   - "Manual Discount" ক্ষেত্র ডিসকাউন্ট পরিমাণ লিখুন
+   - ডিসকাউন্ট ধরন সিলেক্ট করুন: "Fixed Amount" বা "Percentage"
+   - সিস্টেম সাবটোটাল ডিসকাউন্ট প্রয়োগ করবে
 
-2. **Stock Monitoring**:
-   - View stock levels in product selection
-   - Check stock movement reports
-   - Set up low stock alerts
+2. **Discount Codes (ডিসকাউন্ট কোড)**:
+   - "Discount Code" ক্ষেত্র প্রমোশনাল কোড লিখুন
+   - সিস্টেম কোড যাচাই ও প্রয়োগ করবে
+   - ডিসকাউন্ট বিবরণ প্রদর্শন করবে
+
+3. **Loyalty Points (লয়েলটি পয়েন্ট)**:
+   - "Points to Redeem" ক্ষেত্র পয়েন্ট লিখুন
+   - সিস্টেম পয়েন্ট ডিসকাউন্টে রূপান্তর করবে (১০০ পয়েন্ট = ১০ টাকা)
+   - ডিসকাউন্ট স্বয়ংক্রিয়ভাবে প্রয়োগ করবে
+
+---
+
+### 2.6. Inventory Management (ইনভেন্টরি ম্যানেজমেন্ট)
+
+#### Features:
+- **Real-time Stock Updates**: অর্ডার সম্পূর্ণ স্টক আপডেট
+- **Stock Movement Tracking**: সম্পূর্ণ ইনভেন্টরি মুভমেন্ট হিস্টরি
+- **Low Stock Alerts**: কম স্টক এলার্ট নোটিফিকেশন
+- **Stock Adjustment**: ম্যানুয়াল স্টক এডজাস্টমেন্ট
+
+#### How to Use (ব্যবহার নির্দেশিকা):
+1. **Automatic Stock Management (স্বয়ংক্রিয় স্টক ম্যানেজমেন্ট)**:
+   - অর্ডার সম্পূর্ণ হলে স্টক স্বয়ংক্রিয় কমে হয়
+   - ইনভেন্টরি মুভমেন্ট অডিট ট্রেইল রেকর্ড হয়
+   - কম স্টক আইটেম হাইলাইট করা হয়
+
+2. **Stock Monitoring (স্টক পরিবীক্ষণ)**:
+   - পণ্য সিলেকশনে স্টক লেভেল দেখুন
+   - স্টক মুভমেন্ট রিপোর্ট চেক করুন
+   - কম স্টক এলার্ট সেট করুন
 
 ---
 

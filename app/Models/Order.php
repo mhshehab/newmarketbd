@@ -14,7 +14,6 @@ class Order extends Model
         'order_number',   // Auto-generated order number
         'total_amount',  // Total order amount
         'status',        // Order status
-        'notes',         // Additional order notes
     ];
 
     /**

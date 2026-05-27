@@ -23,7 +23,6 @@ class CreatePOS extends CreateRecord
         // Generate order number
         $data['order_number'] = 'POS-' . date('Ymd') . '-' . str_pad(Order::max('id') + 1, 4, '0', STR_PAD_LEFT);
         $data['status'] = 'pending';
-        $data['notes'] = $data['notes'] ?? '';
 
         // Calculate totals
         $subtotal = 0;
@@ -82,18 +81,22 @@ class CreatePOS extends CreateRecord
         DB::beginTransaction();
         try {
             // Create order items
-            foreach ($data['_calculated_items'] as $item) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                    'total_price' => $item['total_price'],
-                ]);
-
-                // Update stock
+            foreach ($data['items'] as $item) {
                 $product = \App\Models\Product::find($item['product_id']);
                 if ($product) {
+                    $quantity = $item['quantity'];
+                    $unitPrice = $product->price;
+                    $totalPrice = $quantity * $unitPrice;
+                    
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $item['product_id'],
+                        'quantity' => $quantity,
+                        'unit_price' => $unitPrice,
+                        'total_price' => $totalPrice,
+                    ]);
+
+                    // Update stock
                     $product->decrement('stock_quantity', $item['quantity']);
                     
                     // Create stock movement
@@ -155,6 +158,9 @@ class CreatePOS extends CreateRecord
                 ->body("POS Order #{$order->order_number} has been created with total amount of  {$order->total_amount} BDT")
                 ->success()
                 ->send();
+            
+            // Redirect to order view page with invoice download
+            $this->redirect($this->getResource()::getUrl('view', ['record' => $order->id]));
 
         } catch (\Exception $e) {
             DB::rollBack();

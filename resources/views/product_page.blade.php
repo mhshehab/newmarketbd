@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $category->name . ' - FreshCart')
+@section('title', $category->name . ' - ' . \App\Models\Setting::getValue('website_name', 'Default Name'))
 
 @section('content')
 <div class="p-6">

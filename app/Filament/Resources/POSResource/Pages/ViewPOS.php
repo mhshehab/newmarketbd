@@ -52,8 +52,7 @@ class ViewPOS extends ViewRecord
 
                                 TextEntry::make('created_at')
                                     ->label('Order Date')
-                                    ->dateTime('M d, Y h:i A')
-                                    ->description(fn ($record) => $record->created_at->diffForHumans()),
+                                    ->dateTime('M d, Y h:i A'),
                             ]),
                     ]),
 
@@ -263,11 +262,11 @@ class ViewPOS extends ViewRecord
                         ->send();
                 }),
 
-            Action::make('print')
-                ->label('Print Receipt')
-                ->icon('heroicon-o-printer')
-                ->color('gray')
-                ->url(fn () => route('orders.receipt', $record))
+            Action::make('download_invoice')
+                ->label('Download Invoice')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('primary')
+                ->url(fn () => url("/pos/invoice/{$record->id}/download"))
                 ->openUrlInNewTab(),
         ];
     }

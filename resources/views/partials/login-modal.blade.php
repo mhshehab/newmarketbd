@@ -3,7 +3,7 @@
         <button @click="loginModal = false" class="absolute top-4 right-4 text-gray-400 text-2xl hover:text-black">&times;</button>
         
         <div class="text-center mb-8">
-            <h2 class="text-2xl font-black text-pink-600">Welcome to FreshCart</h2>
+            <h2 class="text-2xl font-black text-pink-600">Welcome to {{ \App\Models\Setting::getValue('website_name', 'Default Name') }}</h2>
             <p class="text-gray-500 text-sm italic mt-1">Please login to access your profile & history</p>
         </div>
 
